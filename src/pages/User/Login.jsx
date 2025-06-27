@@ -1,30 +1,25 @@
 import React, { useState } from "react";
-import { loginUser } from "../../api/employerApi";
+// import { loginUser } from "../../api/employerApi";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../../features/user/userSlice';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+    const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.user);
+  // const [error, setError] = useState("");
   const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Please fill in both fields.");
-      return;
-    }
-
-    setError("");
-    const response = await loginUser({ email, password });
-
-    if (response.success) {
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
-      navigate("/"); // Redirect to dashboard/home
-      window.location.reload(); // Refresh the page after navigation
-    } else {
-      setError(response.message); // Show backend error
+     try {
+      await dispatch(loginUser({ email, password })).unwrap();
+      navigate('/');
+    } catch (err) {
+      console.error('Login failed:', err);
     }
   };
   return (
@@ -37,7 +32,6 @@ const Login = () => {
         {error && (
           <div className="mb-4 text-red-500 text-sm text-center">{error}</div>
         )}
-
         <form onSubmit={handleSubmit}>
           <input
             type="email"

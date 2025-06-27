@@ -14,8 +14,12 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { logoutUser } from "../api/employerApi";
+import { useSelector } from "react-redux";
 
 const Sidebar = () => {
+  const { currentUser } = useSelector((state) => state.user);
+
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,17 +39,16 @@ const Sidebar = () => {
 
   const isActiveRoute = (path) => location.pathname === path;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Clear user auth data (token, user info)
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    setShowLogoutModal(false);
-
-    // Optionally you can clear any global state here (Redux/Context)
-
-    // Redirect to login page
-    navigate("/users/login");
+    try {
+      await logoutUser();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/users/login";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const LogoutModal = () => {
@@ -158,14 +161,16 @@ const Sidebar = () => {
             }`}
           >
             <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center shadow-md">
-              <span className="text-black text-sm font-medium">T</span>
+              <span className="text-black text-sm font-medium"></span>
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-yellow-100 truncate">
-                  Timo
+                  {currentUser.name}
                 </p>
-                <p className="text-xs text-yellow-400 truncate">Admin</p>
+                <p className="text-xs text-yellow-400 truncate">
+                  {currentUser.role}
+                </p>
               </div>
             )}
           </div>
