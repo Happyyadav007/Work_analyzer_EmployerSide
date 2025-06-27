@@ -1,5 +1,6 @@
 // src/api.js
-import axiosInstance from "./axios";
+// import axiosInstance from "./axios";
+import axiosInstance from "../utils/axiosInterceptor";
 
 export const registerUser = async (userData) => {
   try {
@@ -22,17 +23,15 @@ export const registerUser = async (userData) => {
     };
   }
 };
+
 // Login employer user
 export const loginUser = async (credentials) => {
   try {
-    console.log("Sending login credentials:", credentials);
-    const response = await axiosInstance.post("/employers/login", credentials, {
-      withCredentials: true, // for cookies if needed
-    });
+    const response = await axiosInstance.post("/employers/login", credentials);
     return {
       success: true,
       message: response.data.message,
-      token: response.data.token, // include token here
+      token: response.data.token,
       user: response.data.user,
     };
   } catch (error) {
@@ -45,7 +44,30 @@ export const loginUser = async (credentials) => {
   }
 };
 
-// Logout employer user
+// Refresh token function
+export const refreshToken = async () => {
+  try {
+    const response = await axiosInstance.post("/employers/refresh-token");
+    return response.data.token;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Logout function
+export const logoutUser = async () => {
+  try {
+    await axiosInstance.post("/employers/logout");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Logout failed",
+    };
+  }
+};
 
 export const fetchAllUsers = async () => {
   try {

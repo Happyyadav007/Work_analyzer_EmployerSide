@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   BrowserRouter as Router,
   Routes,
@@ -17,12 +18,18 @@ import AddItem from "./pages/Item/AddItem";
 import MyProjectDetail from "./pages/MyProjectDetail";
 import MyProjects from "./pages/MyProjects";
 import BudgetFileManager from "./components/ProjectDetail/BudgetFileManager";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { Provider } from 'react-redux';
+import { store } from "./app/store";
+import { useSelector } from "react-redux";
 
 // Create a wrapper to use useLocation outside Router
 function AppWrapper() {
   return (
     <Router>
+      <Provider store={store}>
       <App />
+      </Provider>
     </Router>
   );
 }
@@ -30,6 +37,20 @@ function AppWrapper() {
 function App() {
   const location = useLocation();
   const hideSidebar = location.pathname === "/users/login";
+  const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    // Check authentication status on app load
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!token && location.pathname !== "/users/login") {
+        navigate("/users/login");
+      }
+    };
+
+    checkAuth();
+  }, [location.pathname, navigate]);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -46,7 +67,7 @@ function App() {
                 Project Management System
               </h1>
               <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-600">Welcome back, Timo</div>
+                <div className="text-sm text-gray-600">Welcome back, {currentUser.name}</div>
               </div>
             </div>
           </header>
@@ -59,16 +80,19 @@ function App() {
           }`}
         >
           <Routes>
+            <Route path="/users/login" element={<Login />} />
+           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Project />} />
             <Route path="/myprojects" element={<MyProjects />} />
             <Route path="/users" element={<User />} />
             <Route path="/users/adduser" element={<AddUser />} />
-            <Route path="/users/login" element={<Login />} />
+            {/* <Route path="/users/login" element={<Login />} /> */}
             <Route path="/budgettracker/:id" element={<BudgetFileManager />} />
             <Route path="/myproject/:projectId" element={<MyProjectDetail />} />
             <Route path="/items" element={<ItemPage />} />
             <Route path="/item/additem" element={<AddItem />} />
+            </Route>
           </Routes>
         </main>
       </div>
