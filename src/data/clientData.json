@@ -1,0 +1,16 @@
+[
+  {
+    "_id": "1",
+    "name": "Alice Johnson",
+    "email": "alice.johnson@example.com",
+    "phone": "+91-9876543210",
+    "preferences": "Modern minimalistic interior with warm tones"
+  },
+  {
+    "_id": "2",
+    "name": "Ravi Kumar",
+    "email": "ravi.kumar@example.com",
+    "phone": "+91-9123456789",
+    "preferences": "Traditional Indian with wood accents"
+  }
+]
