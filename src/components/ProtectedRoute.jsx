@@ -1,17 +1,11 @@
-import { useEffect } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+
+import { useSelector } from 'react-redux';
+import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = () => {
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    if (!token) {
-      navigate("/users/login");
-    }
-  }, [token, navigate]);
-
-  return token ? <Outlet /> : null;
+  const { currentUser } = useSelector((state) => state.user);
+  
+  return currentUser ? <Outlet /> : <Navigate to="/users/login" replace />;
 };
 
 export default ProtectedRoute;

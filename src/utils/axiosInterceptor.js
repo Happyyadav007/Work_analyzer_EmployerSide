@@ -1,16 +1,29 @@
-import axios from "axios";
-import { refreshToken } from "../api/employerApi";
+import axios from 'axios';
+import { store } from '../app/store';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
   withCredentials: true,
 });
 
+let isRefreshing = false;
+let failedQueue = [];
 
-// Request interceptor to add token to headers
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -19,37 +32,44 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for token refresh
+// Response interceptor
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     const originalRequest = error.config;
     
-    // Check for 401 and avoid infinite loops
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.log("Interceptor caught 401:", error.response?.status);
-      originalRequest._retry = true; // Mark request to avoid retry loop
-      
+       console.log('Attempting token refresh...');
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers['Authorization'] = `Bearer ${token}`;
+          return axiosInstance(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
       try {
-        // Step 1: Get new access token via refresh token
-        const newToken = await refreshToken();
+        const { payload } = await store.dispatch(silentRefresh());
+        const newToken = payload.token;
         
-        // Step 2: Store the new token
-        localStorage.setItem("token", newToken);
-        
-        // Step 3: Retry the original request
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        processQueue(null, newToken);
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
         return axiosInstance(originalRequest);
-        
       } catch (refreshError) {
-        // If refresh fails, logout and redirect
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        window.location.href = "/users/login";
+        processQueue(refreshError, null);
+        store.dispatch(logoutUser());
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
