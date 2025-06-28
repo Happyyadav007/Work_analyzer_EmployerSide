@@ -19,7 +19,7 @@ import MyProjectDetail from "./pages/MyProjectDetail";
 import MyProjects from "./pages/MyProjects";
 import BudgetFileManager from "./components/ProjectDetail/BudgetFileManager";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Provider } from 'react-redux';
+import { Provider } from "react-redux";
 import { store } from "./app/store";
 import { useSelector } from "react-redux";
 
@@ -28,7 +28,7 @@ function AppWrapper() {
   return (
     <Router>
       <Provider store={store}>
-      <App />
+        <App />
       </Provider>
     </Router>
   );
@@ -67,7 +67,9 @@ function App() {
                 Project Management System
               </h1>
               <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-600">Welcome back, {currentUser.name}</div>
+                <div className="text-sm text-gray-600">
+                  Welcome back, {currentUser?.name}
+                </div>
               </div>
             </div>
           </header>
@@ -81,17 +83,23 @@ function App() {
         >
           <Routes>
             <Route path="/users/login" element={<Login />} />
-           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/projects" element={<Project />} />
-            <Route path="/myprojects" element={<MyProjects />} />
-            <Route path="/users" element={<User />} />
-            <Route path="/users/adduser" element={<AddUser />} />
-            {/* <Route path="/users/login" element={<Login />} /> */}
-            <Route path="/budgettracker/:id" element={<BudgetFileManager />} />
-            <Route path="/myproject/:projectId" element={<MyProjectDetail />} />
-            <Route path="/items" element={<ItemPage />} />
-            <Route path="/item/additem" element={<AddItem />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/projects" element={<Project />} />
+              <Route path="/myprojects" element={<MyProjects />} />
+              <Route path="/users" element={<User />} />
+              <Route path="/users/adduser" element={<AddUser />} />
+              {/* <Route path="/users/login" element={<Login />} /> */}
+              <Route
+                path="/budgettracker/:id"
+                element={<BudgetFileManager />}
+              />
+              <Route
+                path="/myproject/:projectId"
+                element={<MyProjectDetail />}
+              />
+              <Route path="/items" element={<ItemPage />} />
+              <Route path="/item/additem" element={<AddItem />} />
             </Route>
           </Routes>
         </main>
