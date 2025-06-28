@@ -17,7 +17,7 @@ const Login = () => {
     e.preventDefault();
      try {
       await dispatch(loginUser({ email, password })).unwrap();
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       console.error('Login failed:', err);
     }

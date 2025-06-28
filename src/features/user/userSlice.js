@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axios";
 
@@ -18,60 +17,67 @@ export const loginUser = createAsyncThunk(
 );
 
 export const silentRefresh = createAsyncThunk(
-  'user/silentRefresh',
+  "user/silentRefresh",
   async (_, { rejectWithValue, dispatch }) => {
     try {
-      const response = await axiosInstance.post('/employers/refresh-token');
-      
+      const response = await axiosInstance.post("/employers/refresh-token");
+
       if (!response.data.token) {
         throw new Error("No token received from refresh");
       }
 
       // Update both token and user in localStorage
-      localStorage.setItem('token', response.data.token);
-      
+      localStorage.setItem("token", response.data.token);
+
       // If user data is included in refresh response, update it
       if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem("user", JSON.stringify(response.data.user));
       }
 
-      return { 
+      return {
         token: response.data.token,
-        user: response.data.user || JSON.parse(localStorage.getItem('user'))
+        user: response.data.user || JSON.parse(localStorage.getItem("user")),
       };
     } catch (error) {
       // Clear all auth data on failure
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       dispatch(clearUser());
-      return rejectWithValue(error.response?.data?.message || "Session expired. Please login again.");
+      return rejectWithValue(
+        error.response?.data?.message || "Session expired. Please login again."
+      );
     }
   }
 );
 export const logoutUser = createAsyncThunk(
   "user/logout",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       await axiosInstance.post("/employers/logout");
+      
+      // Clear all client-side auth data
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      dispatch(clearUser());
+      
       return true;
     } catch (error) {
+      // Even if API fails, ensure client-side cleanup
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      dispatch(clearUser());
+      
       return rejectWithValue(error.message);
     }
   }
 );
 
-const initialState = {
-  currentUser: localStorage.getItem('user') 
-    ? JSON.parse(localStorage.getItem('user')) 
-    : null,
-  loading: false,
-  error: null,
-};
-
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    currentUser: null,
+    currentUser: localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null,
     loading: false,
     error: null,
   },
@@ -118,7 +124,10 @@ const userSlice = createSlice({
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.currentUser = null;
+        state.loading = false;
+        state.error = null;
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
       });
   },
 });

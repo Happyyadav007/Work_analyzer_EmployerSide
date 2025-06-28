@@ -40,7 +40,7 @@ function AppWrapper() {
 
 function App() {
   const location = useLocation();
-  const hideSidebar = location.pathname === "/users/login";
+  const hideSidebar = location.pathname === "/";
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
 
@@ -86,9 +86,9 @@ function App() {
           }`}
         >
           <Routes>
-            <Route path="/users/login" element={<Login />} />
+            <Route path="/" element={<Login />} />
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/projects" element={<Project />} />
               <Route path="/myprojects" element={<MyProjects />} />
               <Route path="/users" element={<User />} />

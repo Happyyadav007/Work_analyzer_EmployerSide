@@ -14,11 +14,13 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { logoutUser } from "../api/employerApi";
 import { useSelector } from "react-redux";
+import { useDispatch } from 'react-redux';
+import { logoutUser } from "../features/user/userSlice";
 
 const Sidebar = () => {
   const { currentUser } = useSelector((state) => state.user);
+   const dispatch = useDispatch();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,7 +28,7 @@ const Sidebar = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const menuItems = [
-    { path: "/", label: "Dashboard", icon: Home },
+    { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/projects", label: "Projects", icon: Folder },
     { path: "/myprojects", label: "My Projects", icon: Folder },
     { path: "/users", label: "Users", icon: Users },
@@ -42,10 +44,9 @@ const Sidebar = () => {
   const handleLogout = async () => {
     // Clear user auth data (token, user info)
     try {
-      await logoutUser();
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/users/login";
+     await dispatch(logoutUser()).unwrap();
+      // Use navigate instead of window.location
+      navigate('/');
     } catch (error) {
       console.error("Logout failed:", error);
     }

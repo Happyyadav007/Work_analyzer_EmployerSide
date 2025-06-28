@@ -26,12 +26,12 @@ const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error("Silent refresh failed:", error);
           dispatch(logoutUser());
-          if (window.location.pathname !== "/users/login") {
-            navigate("/users/login");
+          if (window.location.pathname !== "/") {
+            navigate("/");
           }
         }
-      } else if (!token && window.location.pathname !== "/users/login") {
-        navigate("/users/login");
+      } else if (!token && window.location.pathname !== "/") {
+        navigate("/");
       }
     };
 
