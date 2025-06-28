@@ -67,7 +67,7 @@ function App() {
                 Project Management System
               </h1>
               <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-600">Welcome back, {currentUser.name}</div>
+                <div className="text-sm text-gray-600">Welcome back, {currentUser?.name}</div>
               </div>
             </div>
           </header>

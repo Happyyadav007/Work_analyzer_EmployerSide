@@ -166,10 +166,10 @@ const Sidebar = () => {
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-yellow-100 truncate">
-                  {currentUser.name}
+                  {currentUser?.name}
                 </p>
                 <p className="text-xs text-yellow-400 truncate">
-                  {currentUser.role}
+                  {currentUser?.role}
                 </p>
               </div>
             )}
